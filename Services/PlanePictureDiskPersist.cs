@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using Rusada.Common.Exceptions;
 using Rusada.Domain.Interfaces;
 
 namespace Rusada.Services
@@ -40,7 +41,7 @@ namespace Rusada.Services
             catch (Exception ex)
             {
                 logger.LogError("Error occured when saving plane picture", ex);
-                throw;
+                throw new ServerErrorException("Error occured when saving plane picture", ex);
             }
         }
     }

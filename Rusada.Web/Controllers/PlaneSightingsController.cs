@@ -60,6 +60,7 @@ namespace Rusada.Web.Controllers
             [FromQuery] int pageNumber,
             [FromQuery] int pageSize)
         {
+            //TODO sinitize searchText 
             var planeSightings = await planeSightingsService.GetListAsync(
                 searchText,
                 pageNumber,

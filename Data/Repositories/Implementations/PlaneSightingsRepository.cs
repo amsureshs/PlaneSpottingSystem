@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rusada.Common.Exceptions;
 using Rusada.Data.DBContexts;
 using Rusada.Data.Models.DTOs;
 using Rusada.Data.Models.Entities;
@@ -45,7 +46,7 @@ namespace Rusada.Data.Repositories.Implementations
             catch (Exception ex)
             {
                 logger.LogError("Error on creating new plane sighting", ex);
-                throw;
+                throw new ServerErrorException("Error on creating new plane sighting", ex);
             }
         }
 
@@ -59,17 +60,20 @@ namespace Rusada.Data.Repositories.Implementations
 
                 if (planeSighting == null)
                 {
-                    //need to imprpove by introducing app specific exceptions
-                    throw new Exception("Plane sighting not found");
+                    throw new NotFoundException();
                 }
 
                 dbContext.PlaneSightings.Remove(planeSighting);
                 await dbContext.SaveChangesAsync();
             }
+            catch (ApiException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.LogError("Error on deleting the plane sighting", ex);
-                throw;
+                throw new ServerErrorException("Error on deleting the plane sighting", ex);
             }
         }
 
@@ -83,7 +87,7 @@ namespace Rusada.Data.Repositories.Implementations
 
                 if (planeSighting == null)
                 {
-                    throw new Exception("Plane sighting not found");
+                    throw new NotFoundException();
                 }
 
                 planeSighting.Make = planeSightingEditDataDTO.Make;
@@ -110,10 +114,14 @@ namespace Rusada.Data.Repositories.Implementations
                 dbContext.PlaneSightings.Update(planeSighting);
                 await dbContext.SaveChangesAsync();
             }
+            catch (ApiException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.LogError("Error on updating the plane sighting", ex);
-                throw;
+                throw new ServerErrorException("Error on updating the plane sighting", ex);
             }
         }
 
@@ -132,6 +140,7 @@ namespace Rusada.Data.Repositories.Implementations
 
                 if (!string.IsNullOrWhiteSpace(searchText))
                 {
+                    //TODO fulltext search
                     //queryable = queryable
                     //    .Where(ps => EF.Functions.Contains(ps.SearchField, $"\"{searchText}\""));
 
@@ -153,8 +162,8 @@ namespace Rusada.Data.Repositories.Implementations
             }
             catch (Exception ex)
             {
-                logger.LogError("Error on get list of the plane sightings", ex);
-                throw;
+                logger.LogError("Error on get plane sightings list", ex);
+                throw new ServerErrorException("Error on get plane sightings list", ex);
             }
         }
 
@@ -170,15 +179,19 @@ namespace Rusada.Data.Repositories.Implementations
 
                 if (planeSighting == null)
                 {
-                    throw new Exception("Plane sighting not found");
+                    throw new NotFoundException();
                 }
 
                 return planeSighting.Adapt<PlaneSightingDataDTO>();
             }
+            catch (ApiException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.LogError("Error on get details of the plane sighting", ex);
-                throw;
+                throw new ServerErrorException("Error on get details of the plane sighting", ex);
             }
         }
     }
