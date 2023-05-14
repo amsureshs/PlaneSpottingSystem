@@ -3,16 +3,18 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <RootNamespace>Rusada.Domain</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Interfaces\" />
     <None Remove="Models\" />
+    <None Remove="Models\DTOs\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Interfaces\" />
     <Folder Include="Models\" />
+    <Folder Include="Models\DTOs\" />
   </ItemGroup>
 </Project>

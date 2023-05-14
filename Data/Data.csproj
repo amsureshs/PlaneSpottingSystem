@@ -3,14 +3,29 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <RootNamespace>Rusada.Data</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Entities\" />
+    <None Remove="DBContexts\" />
+    <None Remove="Repositories\" />
+    <None Remove="Repositories\Implementations\" />
+    <None Remove="Models\" />
+    <None Remove="Models\Entities\" />
+    <None Remove="Models\DTOs\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Entities\" />
+    <Folder Include="DBContexts\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Implementations\" />
+    <Folder Include="Models\" />
+    <Folder Include="Models\Entities\" />
+    <Folder Include="Models\DTOs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
   </ItemGroup>
 </Project>
