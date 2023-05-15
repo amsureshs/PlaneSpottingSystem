@@ -2,34 +2,40 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Rusada.Domain.Interfaces;
 using Rusada.Domain.Models.DTOs;
 using Rusada.Web.Models.APIViewModels;
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Rusada.Web.Controllers
 {
     public class PlaneSightingsController : BaseController
     {
         private readonly IPlaneSightingsService planeSightingsService;
+        private readonly IValidator<PlaneSightingCreateVM> planeSightCreateValidator;
+        private readonly IValidator<PlaneSightingEditVM> planeSightEditValidator;
 
-        public PlaneSightingsController(IPlaneSightingsService planeSightingsService)
+        public PlaneSightingsController(
+            IPlaneSightingsService planeSightingsService,
+            IValidator<PlaneSightingCreateVM> createValidator,
+            IValidator<PlaneSightingEditVM> editValidator)
         {
             this.planeSightingsService = planeSightingsService;
-        }
-
-        // GET: /<controller>/
-        public IActionResult Index()
-        {
-            return View();
+            this.planeSightCreateValidator = createValidator;
+            this.planeSightEditValidator = editValidator;
         }
 
         [HttpPost]
         public async Task CreateAsync([FromBody] PlaneSightingCreateVM planeSightingCreateVM)
         {
+            var result = await planeSightCreateValidator.ValidateAsync(planeSightingCreateVM);
+            if (!result.IsValid)
+            {
+                throw new Rusada.Common.Exceptions.ValidationException(result.Errors);
+            }
+
             var planeSighting = planeSightingCreateVM.Adapt<PlaneSightingCreateDomainDTO>();
             await planeSightingsService.CreateAsync(planeSighting, UserId);
         }
@@ -37,6 +43,12 @@ namespace Rusada.Web.Controllers
         [HttpPut]
         public async Task EditAsync([FromBody] PlaneSightingEditVM planeSightingEditVM)
         {
+            var result = await planeSightEditValidator.ValidateAsync(planeSightingEditVM);
+            if (!result.IsValid)
+            {
+                throw new Rusada.Common.Exceptions.ValidationException(result.Errors);
+            }
+
             var planeSighting = planeSightingEditVM.Adapt<PlaneSightingEditDomainDTO>();
             await planeSightingsService.EditAsync(planeSighting, UserId);
         }

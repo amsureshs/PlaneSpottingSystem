@@ -7,8 +7,8 @@ namespace Rusada.Web.Controllers
 {
     [ApiController]
     [ApiExceptionFilter]
-    [Route("[controller]")]
-    public class BaseController : Controller
+    [Route("api/[controller]")]
+    public class BaseController : ControllerBase
     {
         public string UserId
         {

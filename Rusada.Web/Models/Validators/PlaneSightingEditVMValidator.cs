@@ -4,14 +4,14 @@ using Rusada.Web.Models.APIViewModels;
 
 namespace Rusada.Web.Models.Validators
 {
-	public class PlaneSightingCreateVMValidator : AbstractValidator<PlaneSightingCreateVM>
-	{
-		public PlaneSightingCreateVMValidator()
+	public class PlaneSightingEditVMValidator : AbstractValidator<PlaneSightingEditVM>
+    {
+		public PlaneSightingEditVMValidator()
 		{
-			//Make is required and max 128 characters
-			RuleFor(ps => ps.Make)
-				.NotEmpty()
-				.MaximumLength(128);
+            //Make is required and max 128 characters
+            RuleFor(ps => ps.Make)
+                .NotEmpty()
+                .MaximumLength(128);
 
             //Model is required and max 128 characters
             RuleFor(ps => ps.Model)
@@ -39,6 +39,6 @@ namespace Rusada.Web.Models.Validators
                 .NotEmpty()
                 .LessThan(DateTime.UtcNow);
         }
-    }
+	}
 }
 

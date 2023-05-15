@@ -12,12 +12,20 @@ namespace Rusada.Data.DBContexts
         public DbSet<PlaneSighting> PlaneSightings { get; set; }
         public DbSet<PlanePicture> PlanePictures { get; set; }
 
+        public string DbPath { get; }
+
         public ApplicationDbContext(
-            DbContextOptions options,
+            DbContextOptions<ApplicationDbContext> options,
             IOptions<OperationalStoreOptions> operationalStoreOptions)
             : base(options, operationalStoreOptions)
         {
+            var folder = Environment.SpecialFolder.LocalApplicationData;
+            var path = Environment.GetFolderPath(folder);
+            DbPath = System.IO.Path.Join(path, "RusadaDb_2.db");
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        => options.UseSqlite($"Data Source={DbPath}");
 
         public async Task<int> SaveChangesAsync()
         {
