@@ -31,6 +31,7 @@ else
         options.UseSqlServer(connectionString));
 }
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
 //Identity and authentication
 builder.Services
@@ -58,6 +59,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+
+    // Initialise the database
+    using (var scope = app.Services.CreateScope())
+    {
+        var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+        await initialiser.InitialiseAsync();
+    }
 }
 else
 {
