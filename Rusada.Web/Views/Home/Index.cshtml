@@ -29,7 +29,8 @@
             <tbody data-bind="foreach: planeList">
                 <tr data-bind="click: $parent.detailClicked">
                     <td class="click-able">
-                        <img src="../../content/images/plane-icon.png" class="img-thumbnail" alt="flight image">
+                        @*src="../../content/images/plane-icon.png"*@
+                        <img data-bind="attr: {src: photoSrc}" class="img-thumbnail" alt="flight image">
                     </td>
                     <td class="click-able" data-bind="text: make"></td>
                     <td class="click-able" data-bind="text: model"></td>
@@ -74,7 +75,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="text-center">
-                            <img src="../../content/images/plane-icon.png" class="img-medium" alt="flight image">
+                            <img data-bind="attr: {src: detailModel.photoSrc}" class="img-medium" alt="flight image">
                         </div>
                         <div class="modal-body">
 
@@ -147,8 +148,27 @@
             const list = response.data;
             self.planeList.removeAll();
             list.forEach(function (item, index) {
-                self.planeList.push(item);
+                const formatted = formatForView(item);
+                self.planeList.push(formatted);
             });
+        }
+
+        function formatForView(planeShighting) {
+            //TODO format date correctly
+            const seenTime = planeShighting.seenDateTime + ".000Z";
+            const date = new Date(seenTime);
+            const formattedSeenDate = date.toLocaleString();
+            planeShighting.seenDateTime = formattedSeenDate;
+
+            // picture path format
+            let path = "../../content/images/plane-icon.png";
+            if (planeShighting.picture != null
+                && planeShighting.picture.fileName != null
+                && planeShighting.picture.fileName.length > 0) {
+                path = "../../images/plane-pictures/" + planeShighting.picture.fileName;
+            }
+            planeShighting["photoSrc"] = path;
+            return planeShighting;
         }
 
         self.sendDeleteItemRequest = function (itemId) {
@@ -182,7 +202,8 @@
             model: ko.observable(""),
             registration: ko.observable(""),
             location: ko.observable(""),
-            seenDateTime: ko.observable("")
+            seenDateTime: ko.observable(""),
+            photoSrc: ko.observable(""),
         };
         
 
@@ -227,6 +248,7 @@
             self.detailModel.registration(planeSighting.registration);
             self.detailModel.location(planeSighting.location);
             self.detailModel.seenDateTime(planeSighting.seenDateTime);
+            self.detailModel.photoSrc(planeSighting.photoSrc);
 
             self.currentModelView = new bootstrap.Modal(document.getElementById('detailModal'), {});
             self.currentModelView.show();
@@ -287,7 +309,9 @@
         self.model = ko.observable("");
         self.registration = ko.observable("");
         self.location = ko.observable("");
-        self.seenDateTime = ko.observable("2023-04-12T16:05:07");
+        self.seenDateTime = ko.observable("");
+        self.photoUrl = ko.observable();
+        self.photoContent = "";
 
         ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
             self.make("");
@@ -295,18 +319,50 @@
             self.registration("");
             self.location("");
             self.seenDateTime("");
+            self.photoUrl(null);
+            self.photoContent = "";
         });
 
         self.addClicked = function () {
             validateNewSighting();
+            const utcDate = getUTCDate(self.seenDateTime());
+
+            var picture = null;
+            if (self.photoContent.length > 0) {
+                picture = {
+                    fileContent: self.photoContent
+                };
+            }
             const createObj = {
                 make: self.make(),
                 model: self.model(),
                 registration: self.registration(),
                 location: self.location(),
-                seenDateTime: self.seenDateTime(),
+                seenDateTime: utcDate,
+                picture: picture
             };
             sightingCreateModel.sendCreateSighting(createObj);
+        }
+   
+        self.photoUpload = function (data, e) {
+
+            var file = e.target.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function (onloadend_e) {
+                var result = reader.result; // Here is your base 64 encoded file. Do with it what you want.
+                self.photoUrl(result);
+                self.photoContent = result;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function getUTCDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toISOString();
         }
 
         function validateNewSighting() {

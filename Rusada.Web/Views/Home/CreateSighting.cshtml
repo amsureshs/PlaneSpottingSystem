@@ -32,7 +32,13 @@
 
                         <div class="mb-3">
                             <label for="time" class="col-form-label">Seen At:</label>
-                            <input type="text" class="form-control" id="address-field" data-bind="value: seenDateTime">
+                            <input type="text" class="form-control" id="date-time-field" data-bind="value: seenDateTime">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formFile" class="form-label">Photo:</label>
+                            <input class="form-control" type="file" id="formFile" data-bind="event: {change: photoUpload}" accept="image/*">
+                            <img class="img-thumbnail" data-bind="attr: {src: photoUrl()}" />
                         </div>
 
                     </form>
@@ -49,13 +55,14 @@
 
 <script>
 
-    //$("#datepicker").flatpickr()
+    $('#createModal').on('show.bs.modal', function (event) {
 
-    //$('#createModal').on('show.bs.modal', function (event) {
+        $("#date-time-field").flatpickr({
+            enableTime: true,
+            dateFormat: "m/d/Y H:i",
+        });
 
-
-
-    //});
+    });
 
 
 </script>
