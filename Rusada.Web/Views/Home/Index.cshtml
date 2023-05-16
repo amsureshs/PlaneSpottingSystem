@@ -2,7 +2,7 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+<div>
     <div id="plane-list">
         <div class="row">
             <div class="col">
@@ -29,7 +29,7 @@
             <tbody data-bind="foreach: planeList">
                 <tr data-bind="click: $parent.detailClicked">
                     <td class="click-able">
-                        <img src="../../content/images/default.png" class="img-thumbnail" alt="flight image">
+                        <img src="../../content/images/plane-icon.png" class="img-thumbnail" alt="flight image">
                     </td>
                     <td class="click-able" data-bind="text: make"></td>
                     <td class="click-able" data-bind="text: model"></td>
@@ -64,6 +64,53 @@
             </div>
         </div>
         <!-- End of Delete confirm model -->
+        <!-- Details model view -->
+        <div>
+            <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="text-center">
+                            <img src="../../content/images/plane-icon.png" class="img-medium" alt="flight image">
+                        </div>
+                        <div class="modal-body">
+
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td>Make:</td>
+                                        <td data-bind="text: detailModel.make"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Model:</td>
+                                        <td data-bind="text: detailModel.model"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Registration:</td>
+                                        <td data-bind="text: detailModel.registration"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Location:</td>
+                                        <td data-bind="text: detailModel.location"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Seen At:</td>
+                                        <td data-bind="text: detailModel.seenDateTime"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Details model view -->
 
     </div>
 
@@ -130,6 +177,13 @@
         self.currentModelView = null;
         self.searchText = ko.observableArray("");
         self.itemToBeDeletedId = 0;
+        self.detailModel = {
+            make: ko.observable(""),
+            model: ko.observable(""),
+            registration: ko.observable(""),
+            location: ko.observable(""),
+            seenDateTime: ko.observable("")
+        };
         
 
         ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
@@ -142,7 +196,12 @@
             self.currentModelView.show();
         }
 
-        self.deleteClicked = function (planeSighting) {
+        self.deleteClicked = function (planeSighting, event) {
+            console.log(event);
+            
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
             self.itemToBeDeletedId = planeSighting.id;
             self.currentModelView = new bootstrap.Modal(document.getElementById('deleteConfirmModal'), {});
             self.currentModelView.show();
@@ -159,9 +218,18 @@
         }
 
         self.detailClicked = function (planeSighting, event) {
-            console.log(planeSighting);
-            //console.log(event);
-            event.preventDefault();
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            self.detailModel.make(planeSighting.make);
+            self.detailModel.model(planeSighting.model);
+            self.detailModel.registration(planeSighting.registration);
+            self.detailModel.location(planeSighting.location);
+            self.detailModel.seenDateTime(planeSighting.seenDateTime);
+
+            self.currentModelView = new bootstrap.Modal(document.getElementById('detailModal'), {});
+            self.currentModelView.show();
         }
 
         self.searchClicked = function () {
