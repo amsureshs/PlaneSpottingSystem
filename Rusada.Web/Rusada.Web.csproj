@@ -13,6 +13,7 @@
     <None Remove="Models\Validators\" />
     <None Remove="Filters\" />
     <None Remove="ClientApp\src\" />
+    <None Remove="Infrastructure\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\APIViewModels\" />
@@ -21,6 +22,8 @@
     <Folder Include="wwwroot\lib\knockout\" />
     <Folder Include="wwwroot\content\" />
     <Folder Include="wwwroot\content\images\" />
+    <Folder Include="wwwroot\lib\flatpickr\" />
+    <Folder Include="Infrastructure\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj">
@@ -52,5 +55,6 @@
     <Content Remove="wwwroot\lib\knockout\" />
     <Content Remove="wwwroot\content\" />
     <Content Remove="wwwroot\content\images\" />
+    <Content Remove="wwwroot\lib\flatpickr\" />
   </ItemGroup>
 </Project>

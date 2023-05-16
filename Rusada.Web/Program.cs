@@ -11,6 +11,7 @@ using Rusada.Domain.Interfaces;
 using Rusada.Services;
 using Rusada.Web.Models.Validators;
 using Rusada.Web.Models.APIViewModels;
+using Rusada.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,10 @@ builder.Services
 
 //Add services to the container.
 builder.Services.AddControllersWithViews();
+    //.AddJsonOptions(options =>
+    //{
+    //    options.JsonSerializerOptions.Converters.Add(new DateTimeUTCJsonConverter());
+    //});
 
 //model validations with FluentValidation
 builder.Services.AddScoped<IValidator<PlaneSightingCreateVM>, PlaneSightingCreateVMValidator>();
