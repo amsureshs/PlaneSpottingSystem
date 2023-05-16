@@ -51,7 +51,7 @@ namespace Rusada.Domain.Interfaces
         /// <param name="pageSize"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<List<PlaneSightingDomainDTO>> GetListAsync(
+        Task<PageListDomainDTO<PlaneSightingDomainDTO>> GetListAsync(
             string searchText,
             int pageNumber,
             int pageSize,

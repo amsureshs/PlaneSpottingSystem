@@ -12,11 +12,13 @@
     <None Remove="Models\APIViewModels\" />
     <None Remove="Models\Validators\" />
     <None Remove="Filters\" />
+    <None Remove="ClientApp\src\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\APIViewModels\" />
     <Folder Include="Models\Validators\" />
     <Folder Include="Filters\" />
+    <Folder Include="wwwroot\lib\knockout\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj">
@@ -43,5 +45,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\lib\knockout\" />
   </ItemGroup>
 </Project>

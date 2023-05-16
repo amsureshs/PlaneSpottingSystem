@@ -125,7 +125,7 @@ namespace Rusada.Data.Repositories.Implementations
             }
         }
 
-        public async Task<List<PlaneSightingDataDTO>> GetListAsync(
+        public async Task<PageListDataDTO<PlaneSightingDataDTO>> GetListAsync(
             string searchText,
             int pageNumber,
             int pageSize,
@@ -133,21 +133,34 @@ namespace Rusada.Data.Repositories.Implementations
         {
             try
             {
-                //assumed - user can list his own items only
                 var queryable = dbContext.PlaneSightings
-                    .Include(ps => ps.PlanePictures)
+                        .Include(ps => ps.PlanePictures)
+                        .Where(ps => ps.UserId == userId);
+
+                var queryableTotal = dbContext.PlaneSightings
                     .Where(ps => ps.UserId == userId);
 
-                if (!string.IsNullOrWhiteSpace(searchText))
+
+                var searchExist = !string.IsNullOrWhiteSpace(searchText);
+                if (searchExist)
                 {
+                    searchText = searchText.ToLower();
+
                     //TODO fulltext search
                     //queryable = queryable
                     //    .Where(ps => EF.Functions.Contains(ps.SearchField, $"\"{searchText}\""));
 
-                    queryable = queryable
-                        .Where(ps => ps.SearchField.Contains(searchText));
-                }
+                    //assumed - user can list his own items only
+                    queryable = queryable.Where(ps =>
+                        ps.Make.ToLower().Contains(searchText)
+                        || ps.Model.ToLower().Contains(searchText)
+                        || ps.Registration.ToLower().Contains(searchText));
 
+                    queryableTotal = queryableTotal.Where(ps => ps.Make.ToLower().Contains(searchText)
+                        || ps.Model.ToLower().Contains(searchText)
+                        || ps.Registration.ToLower().Contains(searchText));
+                }
+                
                 if (pageNumber > 0 && pageSize > 0)
                 {
                     queryable = queryable
@@ -155,10 +168,27 @@ namespace Rusada.Data.Repositories.Implementations
                         .Take(pageSize);
                 }
 
+                if (!searchExist)
+                {
+                    queryable = queryable.OrderByDescending(ps => ps.Id);
+                }
+
+                //Total count
+                var totalCount = await queryableTotal.CountAsync();
+
                 var planeSightings = await queryable
                     .ToListAsync();
 
-                return planeSightings.Adapt<List<PlaneSightingDataDTO>>();
+                var dataList = planeSightings.Adapt<List<PlaneSightingDataDTO>>();
+                var pageList = new PageListDataDTO<PlaneSightingDataDTO>
+                {
+                    Data = dataList,
+                    Page = pageNumber,
+                    PageSize = pageSize,
+                    Total = totalCount
+                };
+
+                return pageList;
             }
             catch (Exception ex)
             {

@@ -51,7 +51,7 @@ namespace Rusada.Data.Repositories
         /// <param name="pageSize"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<List<PlaneSightingDataDTO>> GetListAsync(
+        Task<PageListDataDTO<PlaneSightingDataDTO>> GetListAsync(
             string searchText,
             int pageNumber,
             int pageSize,

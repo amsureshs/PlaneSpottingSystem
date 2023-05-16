@@ -15,13 +15,7 @@ namespace Rusada.Web.Models.APIViewModels
 
         public DateTime SeenDateTime { get; set; }
 
-        public string UserId { get; set; }
-
         public PlanePictureVM Picture { get; set; }
-
-        public DateTime CreatedDateTime { get; set; }
-
-        public DateTime ModifiedDateTime { get; set; }
     }
 
     public class PlaneSightingCreateVM

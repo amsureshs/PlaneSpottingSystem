@@ -1,0 +1,61 @@
+﻿<div id="create-plane-sighting">
+
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+
+                        <div class="mb-3">
+                            <label for="make" class="col-form-label">Make:</label>
+                            <input type="text" class="form-control" id="make-field" data-bind="value: make">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="model" class="col-form-label">Model:</label>
+                            <input type="text" class="form-control" id="model-field" data-bind="value: model">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="col-form-label">Registration:</label>
+                            <input type="text" class="form-control" id="address-field" data-bind="value: registration">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="col-form-label">Location:</label>
+                            <input type="text" class="form-control" id="address-field" data-bind="value: location">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="time" class="col-form-label">Seen At:</label>
+                            <input type="text" class="form-control" id="address-field" data-bind="value: seenDateTime">
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: addClicked">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    //$("#datepicker").flatpickr()
+
+    //$('#createModal').on('show.bs.modal', function (event) {
+
+
+
+    //});
+
+
+</script>

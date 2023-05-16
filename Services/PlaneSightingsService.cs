@@ -114,7 +114,7 @@ namespace Rusada.Services
             }
         }
 
-        public async Task<List<PlaneSightingDomainDTO>> GetListAsync(
+        public async Task<PageListDomainDTO<PlaneSightingDomainDTO>> GetListAsync(
             string searchText,
             int pageNumber,
             int pageSize,
@@ -125,7 +125,7 @@ namespace Rusada.Services
                 var planeSightings = await planeSightingsRepository
                     .GetListAsync(searchText, pageNumber, pageSize, userId);
 
-                return planeSightings.Adapt<List<PlaneSightingDomainDTO>>();
+                return planeSightings.Adapt<PageListDomainDTO<PlaneSightingDomainDTO>>();
             }
             catch (Exception)
             {

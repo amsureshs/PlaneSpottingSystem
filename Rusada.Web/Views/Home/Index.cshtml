@@ -3,22 +3,216 @@
 }
 
 <div class="text-center">
-        <h1 class="display-4">Welcome</h1>
-        <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-        <p>First Name: <strong data-bind="text: firstName"></strong></p>
-        <p>Last Name: <strong data-bind="text: lastName"></strong></p>
-        <p>First name: <input data-bind="value: firstName" /></p>
-        <p>Last name: <input data-bind="value: lastName" /></p>
+    <div id="plane-list">
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-outline-primary float-start" data-bind="click: showCreateClicked">Add New</button>
+            </div>
+            <div class="d-flex input-group mb-3 col">
+                <input class="form-control" type="search" placeholder="Search" aria-label="Search" aria-describedby="button-addon2" data-bind="value: searchText">
+                <button class="btn btn-outline-secondary" type="button" id="button-addon2" data-bind="click: searchClicked">Search</button>
+            </div>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">Make</th>
+                    <th scope="col">Model</th>
+                    <th scope="col">Registration</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Seen At</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: planeList">
+                <tr data-bind="click: $parent.detailClicked">
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able">
+                        <img src="../../content/images/default.png" class="img-thumbnail" alt="flight image">
+                    </td>
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: make"></td>
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: model"></td>
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: registration"></td>
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: location"></td>
+                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: seenDateTime"></td>
+                    <td>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bind="click: $parent.deleteClicked">Delete</button>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
     </div>
+
+</div>
+
+<partial name="CreateSighting.cshtml" />
+<partial name="EditSighting.cshtml" />
 
 
 <script>
 
-
-    function AppViewModel() {
-        this.firstName = ko.observable("Suresh");
-        this.lastName = ko.observable("S");
+    function PlaneSighting() {
+        this.make = "Make";
+        this.model = "Model";
+        this.register = "Register";
+        this.location = "Location";
+        this.seenDateTime = "SeenDateTime";
     }
 
-    ko.applyBindings(new AppViewModel());
-</script>
+    function PlaneListModel() {
+        var self = this;
+        self.planeList = ko.observableArray([]);
+
+        self.loadListData = function (searchText) {
+            let url = "/api/planesightings";
+            if (searchText != null && searchText.trim().length > 0) {
+                url = url + "?searchText=" + searchText;
+            }
+            let jqxhr = $.getJSON(url, function () {
+                console.log("success");
+            })
+                .done(function (response) {
+                    arrangeDataListResponse(response);
+                })
+                .fail(function (error) {
+                    console.log("error");
+                    console.log(error);
+                })
+                .always(function () {
+                    console.log("complete");
+                });
+
+        }
+
+        self.testIt = function () {
+            console.log(self.planeList());
+        }
+
+        function arrangeDataListResponse(response) {
+            const list = response.data;
+            self.planeList.removeAll();
+            list.forEach(function (item, index) {
+                self.planeList.push(item);
+            });
+        }
+    }
+
+    function PlaneListViewModel(planeListModel) {
+        var self = this;
+        self.planeList = planeListModel.planeList;
+        self.createModel = null;
+        self.searchText = ko.observableArray("");
+        
+
+        ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
+            planeListModel.loadListData();
+            self.createModel.hide();
+        });
+
+        self.showCreateClicked = function () {
+            self.createModel = new bootstrap.Modal(document.getElementById('createModal'), {});
+            self.createModel.show();
+        }
+
+        self.deleteClicked = function (planeSighting) {
+
+            self.planeList.remove(planeSighting);
+        }
+
+        self.detailClicked = function (planeSighting) {
+            
+        }
+
+        self.searchClicked = function () {
+            //TODO sinitize the search text
+            //TODO back to all results
+            planeListModel.loadListData(self.searchText());
+        }
+
+        planeListModel.loadListData();
+    }
+
+    ko.applyBindings(
+        new PlaneListViewModel(new PlaneListModel()),
+        document.getElementById("plane-list"));
+
+
+    //Create a Sighting
+    function SightingCreateModel() {
+        var self = this;
+
+        self.sendCreateSighting = function (planeSighting) {
+            console.log("create called");
+            console.log(planeSighting);
+            const jsonData = JSON.stringify(planeSighting);
+
+            var request = $.ajax({
+                url: "/api/planesightings",
+                method: "POST",
+                data: jsonData,
+                contentType: "application/json"
+            });
+            request.done(function (msg) {
+                console.log("done called");
+                onNewRecordAdded();
+            });
+            request.fail(function (jqXHR, textStatus) {
+
+                console.log("fail called");
+                console.log(textStatus);
+                console.log(jqXHR);
+            });
+        }
+
+        function onNewRecordAdded() {
+            ko.postbox.publish("newSightingAddedTopic", true);
+        }
+    }
+
+    function SightingCreateViewModel(sightingCreateModel) {
+        var self = this;
+
+        self.model = sightingCreateModel;
+
+        self.make = ko.observable("");
+        self.model = ko.observable("");
+        self.registration = ko.observable("");
+        self.location = ko.observable("");
+        self.seenDateTime = ko.observable("2023-04-12T16:05:07");
+
+        ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
+            self.make("");
+            self.model("");
+            self.registration("");
+            self.location("");
+            self.seenDateTime("");
+        });
+
+        self.addClicked = function () {
+            validateNewSighting();
+            const createObj = {
+                make: self.make(),
+                model: self.model(),
+                registration: self.registration(),
+                location: self.location(),
+                seenDateTime: self.seenDateTime(),
+            };
+            sightingCreateModel.sendCreateSighting(createObj);
+        }
+
+        function validateNewSighting() {
+            //TODO do validations
+            console.log("todo do validations");
+        }
+
+        //TODO handle plane picture
+        //TODO handle errors
+        //TODO remove old values
+    }
+
+    ko.applyBindings(
+        new SightingCreateViewModel(new SightingCreateModel()),
+        document.getElementById("create-plane-sighting"));</script>

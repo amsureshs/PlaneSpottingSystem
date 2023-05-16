@@ -32,7 +32,7 @@ namespace Rusada.Web.Models.Validators
             RuleFor(ps => ps.Registration)
                 .NotEmpty()
                 .MaximumLength(128)
-                .Matches("[A-Za-z]{1,2}-[A-Za-z]{1,5}");//TODO check this
+                .Matches("^[A-Za-z]{1,2}-[A-Za-z]{1,5}$");
 
             //Must be a valid datetime in the past
             RuleFor(ps => ps.SeenDateTime)

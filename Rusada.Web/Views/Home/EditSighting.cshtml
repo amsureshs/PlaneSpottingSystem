@@ -1,0 +1,55 @@
+﻿<div>
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Update</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+
+                        <div class="mb-3">
+                            <label for="make" class="col-form-label">Make:</label>
+                            <input type="text" class="form-control" id="make-field">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="model" class="col-form-label">Model:</label>
+                            <input type="text" class="form-control" id="model-field">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="col-form-label">Address:</label>
+                            <input type="text" class="form-control" id="address-field">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="time" class="col-form-label">Time:</label>
+                            <input type="text" class="form-control" id="time-field">
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>$('#editModal').on('show.bs.modal', function (event) {
+
+        var button = $(event.relatedTarget)
+
+        var data = button.data('content')
+
+        $('#make-field').val(data.make);
+        $('#model-field').val(data.model);
+        $('#address-field').val(data.address);
+        $('#time-field').val(data.time);
+
+    });</script>

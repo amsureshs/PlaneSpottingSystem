@@ -26,7 +26,7 @@ namespace Rusada.Web.Controllers
             this.planeSightCreateValidator = createValidator;
             this.planeSightEditValidator = editValidator;
         }
-
+        //TODO annotate with http response codes
         [HttpPost]
         public async Task CreateAsync([FromBody] PlaneSightingCreateVM planeSightingCreateVM)
         {
@@ -40,8 +40,8 @@ namespace Rusada.Web.Controllers
             await planeSightingsService.CreateAsync(planeSighting, UserId);
         }
 
-        [HttpPut]
-        public async Task EditAsync([FromBody] PlaneSightingEditVM planeSightingEditVM)
+        [HttpPut("{id}")]
+        public async Task EditAsync([FromRoute] int id, [FromBody] PlaneSightingEditVM planeSightingEditVM)
         {
             var result = await planeSightEditValidator.ValidateAsync(planeSightingEditVM);
             if (!result.IsValid)
@@ -50,6 +50,7 @@ namespace Rusada.Web.Controllers
             }
 
             var planeSighting = planeSightingEditVM.Adapt<PlaneSightingEditDomainDTO>();
+            planeSighting.Id = id;
             await planeSightingsService.EditAsync(planeSighting, UserId);
         }
 
@@ -66,11 +67,12 @@ namespace Rusada.Web.Controllers
             return planeSighting.Adapt<PlaneSightingVM>();
         }
 
-        [HttpGet("list")]
-        public async Task<List<PlaneSightingVM>> GetListAsync(
+        //TODO pagination list
+        [HttpGet]
+        public async Task<PageListVM<PlaneSightingVM>> GetListAsync(
             [FromQuery] string searchText,
-            [FromQuery] int pageNumber,
-            [FromQuery] int pageSize)
+            [FromQuery] int pageNumber = 0,
+            [FromQuery] int pageSize = 0)
         {
             //TODO sinitize searchText 
             var planeSightings = await planeSightingsService.GetListAsync(
@@ -78,7 +80,7 @@ namespace Rusada.Web.Controllers
                 pageNumber,
                 pageSize,
                 UserId);
-            return planeSightings.Adapt<List<PlaneSightingVM>>();
+            return planeSightings.Adapt<PageListVM<PlaneSightingVM>>();
         }
     }
 }
