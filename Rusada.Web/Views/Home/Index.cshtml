@@ -28,22 +28,43 @@
             </thead>
             <tbody data-bind="foreach: planeList">
                 <tr data-bind="click: $parent.detailClicked">
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able">
+                    <td class="click-able">
                         <img src="../../content/images/default.png" class="img-thumbnail" alt="flight image">
                     </td>
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: make"></td>
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: model"></td>
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: registration"></td>
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: location"></td>
-                    <td data-bs-toggle="modal" data-bs-target="#detailModal" class="click-able" data-bind="text: seenDateTime"></td>
+                    <td class="click-able" data-bind="text: make"></td>
+                    <td class="click-able" data-bind="text: model"></td>
+                    <td class="click-able" data-bind="text: registration"></td>
+                    <td class="click-able" data-bind="text: location"></td>
+                    <td class="click-able" data-bind="text: seenDateTime"></td>
                     <td>
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button>
-                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bind="click: $parent.deleteClicked">Delete</button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-target="#updateModal">Update</button>
+                        <button type="button" class="btn btn-outline-danger" data-bind="click: $parent.deleteClicked">Delete</button>
                     </td>
                 </tr>
 
             </tbody>
         </table>
+
+        <!-- Delete confirm model -->
+        <div id="deleteConfirmModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Are you sure?</h5>
+                        <button type="button" class="btn-close" aria-label="Close" data-bind="click: deleteCancelClicked"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Do you really want to delete these record? This process cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bind="click: deleteCancelClicked">Cancel</button>
+                        <button type="button" class="btn btn-danger" data-bind="click: deleteDeleteClicked">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End of Delete confirm model -->
+
     </div>
 
 </div>
@@ -54,19 +75,11 @@
 
 <script>
 
-    function PlaneSighting() {
-        this.make = "Make";
-        this.model = "Model";
-        this.register = "Register";
-        this.location = "Location";
-        this.seenDateTime = "SeenDateTime";
-    }
-
     function PlaneListModel() {
         var self = this;
         self.planeList = ko.observableArray([]);
 
-        self.loadListData = function (searchText) {
+        self.sendListRequest = function (searchText) {
             let url = "/api/planesightings";
             if (searchText != null && searchText.trim().length > 0) {
                 url = url + "?searchText=" + searchText;
@@ -75,64 +88,89 @@
                 console.log("success");
             })
                 .done(function (response) {
-                    arrangeDataListResponse(response);
+                    getListRequestSuccess(response);
                 })
                 .fail(function (error) {
                     console.log("error");
                     console.log(error);
-                })
-                .always(function () {
-                    console.log("complete");
                 });
-
         }
 
-        self.testIt = function () {
-            console.log(self.planeList());
-        }
-
-        function arrangeDataListResponse(response) {
+        function getListRequestSuccess(response) {
             const list = response.data;
             self.planeList.removeAll();
             list.forEach(function (item, index) {
                 self.planeList.push(item);
             });
         }
+
+        self.sendDeleteItemRequest = function (itemId) {
+            const url = "/api/planesightings/" + itemId;
+            var request = $.ajax({
+                url: url,
+                method: "DELETE"
+            });
+            request.done(function (msg) {
+                console.log("delete item success");
+                itemDeleteSuccess();
+            });
+            request.fail(function (jqXHR, textStatus) {
+                console.log("delete item fail called");
+            });
+        }
+
+        function itemDeleteSuccess() {
+            self.sendListRequest();
+        }
     }
 
     function PlaneListViewModel(planeListModel) {
         var self = this;
         self.planeList = planeListModel.planeList;
-        self.createModel = null;
+        self.currentModelView = null;
         self.searchText = ko.observableArray("");
+        self.itemToBeDeletedId = 0;
         
 
         ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
-            planeListModel.loadListData();
-            self.createModel.hide();
+            planeListModel.sendListRequest();
+            self.currentModelView.hide();
         });
 
         self.showCreateClicked = function () {
-            self.createModel = new bootstrap.Modal(document.getElementById('createModal'), {});
-            self.createModel.show();
+            self.currentModelView = new bootstrap.Modal(document.getElementById('createModal'), {});
+            self.currentModelView.show();
         }
 
         self.deleteClicked = function (planeSighting) {
-
-            self.planeList.remove(planeSighting);
+            self.itemToBeDeletedId = planeSighting.id;
+            self.currentModelView = new bootstrap.Modal(document.getElementById('deleteConfirmModal'), {});
+            self.currentModelView.show();
         }
 
-        self.detailClicked = function (planeSighting) {
-            
+        self.deleteDeleteClicked = function (planeSighting) {
+            self.currentModelView.hide();
+            planeListModel.sendDeleteItemRequest(self.itemToBeDeletedId);
+        }
+
+        self.deleteCancelClicked = function (planeSighting) {
+            self.itemToBeDeletedId = 0;
+            self.currentModelView.hide();
+        }
+
+        self.detailClicked = function (planeSighting, event) {
+            console.log(planeSighting);
+            //console.log(event);
+            event.preventDefault();
         }
 
         self.searchClicked = function () {
             //TODO sinitize the search text
             //TODO back to all results
-            planeListModel.loadListData(self.searchText());
+            planeListModel.sendListRequest(self.searchText());
         }
 
-        planeListModel.loadListData();
+        planeListModel.sendListRequest();
     }
 
     ko.applyBindings(
