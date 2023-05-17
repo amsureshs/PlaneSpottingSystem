@@ -6,7 +6,7 @@
     <div id="plane-list">
         <div class="row">
             <div class="col">
-                <button type="button" class="btn btn-outline-primary float-start" data-bind="click: showCreateClicked">Add New</button>
+                <button type="button" class="btn btn-primary float-start" data-bind="click: showCreateClicked">Add New</button>
             </div>
             <div class="d-flex input-group mb-3 col">
                 <input class="form-control" type="search" placeholder="Search" aria-label="Search" aria-describedby="button-addon2" data-bind="value: searchText">
@@ -29,7 +29,6 @@
             <tbody data-bind="foreach: planeList">
                 <tr data-bind="click: $parent.detailClicked">
                     <td class="click-able">
-                        @*src="../../content/images/plane-icon.png"*@
                         <img data-bind="attr: {src: photoSrc}" class="img-thumbnail" alt="flight image">
                     </td>
                     <td class="click-able" data-bind="text: make"></td>
@@ -38,7 +37,7 @@
                     <td class="click-able" data-bind="text: location"></td>
                     <td class="click-able" data-bind="text: seenDateTime"></td>
                     <td>
-                        <button type="button" class="btn btn-outline-primary" data-bs-target="#updateModal">Update</button>
+                        <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.editClicked">Update</button>
                         <button type="button" class="btn btn-outline-danger" data-bind="click: $parent.deleteClicked">Delete</button>
                     </td>
                 </tr>
@@ -123,6 +122,7 @@
 
 <script>
 
+    // List section
     function PlaneListModel() {
         var self = this;
         self.planeList = ko.observableArray([]);
@@ -133,7 +133,7 @@
                 url = url + "?searchText=" + searchText;
             }
             let jqxhr = $.getJSON(url, function () {
-                console.log("success");
+                
             })
                 .done(function (response) {
                     getListRequestSuccess(response);
@@ -154,20 +154,17 @@
         }
 
         function formatForView(planeShighting) {
-            //TODO format date correctly
+            
             const seenTime = planeShighting.seenDateTime + ".000Z";
             const date = new Date(seenTime);
-            const formattedSeenDate = date.toLocaleString();
-            planeShighting.seenDateTime = formattedSeenDate;
 
-            // picture path format
-            let path = "../../content/images/plane-icon.png";
-            if (planeShighting.picture != null
-                && planeShighting.picture.fileName != null
-                && planeShighting.picture.fileName.length > 0) {
-                path = "../../images/plane-pictures/" + planeShighting.picture.fileName;
-            }
-            planeShighting["photoSrc"] = path;
+            const pickerFormatedDate = moment(date).format("MM/DD/YYYY HH:mm");
+            planeShighting["pickerFormatedDate"] = pickerFormatedDate;
+            const seenDateFormatted = moment(date).format("DD/MM/YYYY HH:mm");
+            planeShighting.seenDateTime = seenDateFormatted;
+
+            // picture path
+            setFilePathOrPlaceholder(planeShighting);
             return planeShighting;
         }
 
@@ -178,16 +175,29 @@
                 method: "DELETE"
             });
             request.done(function (msg) {
-                console.log("delete item success");
                 itemDeleteSuccess();
             });
             request.fail(function (jqXHR, textStatus) {
-                console.log("delete item fail called");
             });
         }
 
         function itemDeleteSuccess() {
             self.sendListRequest();
+        }
+
+        function setFilePathOrPlaceholder(planeShighting) {
+            let path = "../../images/plane-icon.png";
+            let isDefaultImage = true;
+
+            if (planeShighting.picture !== null
+                && planeShighting.picture.fileName !== null
+                && planeShighting.picture.fileName.length > 0) {
+                path = "../../images/plane-pictures/" + planeShighting.picture.fileName;
+                isDefaultImage = false;
+            }
+
+            planeShighting["photoSrc"] = path;
+            planeShighting["isDefaultImage"] = isDefaultImage;
         }
     }
 
@@ -218,8 +228,6 @@
         }
 
         self.deleteClicked = function (planeSighting, event) {
-            console.log(event);
-            
             if (event.stopPropagation) {
                 event.stopPropagation();
             }
@@ -260,6 +268,17 @@
             planeListModel.sendListRequest(self.searchText());
         }
 
+        self.editClicked = function (planeSighting, event) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            self.currentModelView = new bootstrap.Modal(document.getElementById('editModal'), {});
+            self.currentModelView.show();
+
+            ko.postbox.publish("sightingToBeUpdatedTopic", planeSighting);
+        }
+
         planeListModel.sendListRequest();
     }
 
@@ -268,13 +287,11 @@
         document.getElementById("plane-list"));
 
 
-    //Create a Sighting
+    //Create section
     function SightingCreateModel() {
         var self = this;
 
         self.sendCreateSighting = function (planeSighting) {
-            console.log("create called");
-            console.log(planeSighting);
             const jsonData = JSON.stringify(planeSighting);
 
             var request = $.ajax({
@@ -284,12 +301,9 @@
                 contentType: "application/json"
             });
             request.done(function (msg) {
-                console.log("done called");
                 onNewRecordAdded();
             });
             request.fail(function (jqXHR, textStatus) {
-
-                console.log("fail called");
                 console.log(textStatus);
                 console.log(jqXHR);
             });
@@ -313,6 +327,8 @@
         self.photoUrl = ko.observable();
         self.photoContent = "";
 
+        self.isRemoveVisibale = ko.observable(false);
+
         ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
             self.make("");
             self.model("");
@@ -325,7 +341,7 @@
 
         self.addClicked = function () {
             validateNewSighting();
-            const utcDate = getUTCDate(self.seenDateTime());
+            const utcDateStr = getUTCDateString(self.seenDateTime());
 
             var picture = null;
             if (self.photoContent.length > 0) {
@@ -338,10 +354,16 @@
                 model: self.model(),
                 registration: self.registration(),
                 location: self.location(),
-                seenDateTime: utcDate,
+                seenDateTime: utcDateStr,
                 picture: picture
             };
             sightingCreateModel.sendCreateSighting(createObj);
+        }
+
+        self.removePhotoClicked = function () {
+            self.photoContent = "";
+            self.photoUrl(null);
+            self.isRemoveVisibale(false);
         }
    
         self.photoUpload = function (data, e) {
@@ -350,9 +372,11 @@
             var reader = new FileReader();
 
             reader.onloadend = function (onloadend_e) {
-                var result = reader.result; // Here is your base 64 encoded file. Do with it what you want.
+                var result = reader.result; // base 64 encoded file
+                //TODO check file size validation
                 self.photoUrl(result);
                 self.photoContent = result;
+                self.isRemoveVisibale(true);
             };
 
             if (file) {
@@ -360,21 +384,173 @@
             }
         }
 
-        function getUTCDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toISOString();
-        }
-
         function validateNewSighting() {
-            //TODO do validations
-            console.log("todo do validations");
+            //TODO validations and handle errors
         }
-
-        //TODO handle plane picture
-        //TODO handle errors
-        //TODO remove old values
     }
 
     ko.applyBindings(
         new SightingCreateViewModel(new SightingCreateModel()),
-        document.getElementById("create-plane-sighting"));</script>
+        document.getElementById("create-plane-sighting"));
+
+
+    //Edit section
+    function SightingEditModel() {
+        var self = this;
+
+        self.sendEditSighting = function (planeSighting) {
+            const jsonData = JSON.stringify(planeSighting);
+
+            const url = "/api/planesightings/" + planeSighting.id;
+            var request = $.ajax({
+                url: url,
+                method: "PUT",
+                data: jsonData,
+                contentType: "application/json"
+            });
+            request.done(function (msg) {
+                onSightingEdited();
+            });
+            request.fail(function (jqXHR, textStatus) {
+                console.log(textStatus);
+                console.log(jqXHR);
+            });
+        }
+
+        function onSightingEdited() {
+            // to refresh the list
+            ko.postbox.publish("newSightingAddedTopic", true);
+            ko.postbox.publish("sightingEditedTopic", true);
+        }
+    }
+
+    function SightingEditViewModel(sightingEditModel) {
+        var self = this;
+
+        self.model = sightingEditModel;
+        self.planeSightingOriginal = null;
+
+        self.make = ko.observable("");
+        self.model = ko.observable("");
+        self.registration = ko.observable("");
+        self.location = ko.observable("");
+        self.seenDateTime = ko.observable("");
+        self.photoUrl = ko.observable();
+        self.photoContent = "";
+
+        self.isRemoveVisibale = ko.observable(true);
+
+        ko.postbox.subscribe("sightingToBeUpdatedTopic", function (planeSighting) {
+            self.planeSightingOriginal = planeSighting;
+            updateFormValues(planeSighting);
+        });
+
+        function updateFormValues(planeSighting) {
+            self.make(planeSighting.make);
+            self.model(planeSighting.model);
+            self.registration(planeSighting.registration);
+            self.location(planeSighting.location);
+            self.seenDateTime(planeSighting.pickerFormatedDate);
+            self.photoUrl(planeSighting.photoSrc);
+
+            if (planeSighting.isDefaultImage == true) {
+                self.isRemoveVisibale(false);
+            } else {
+                self.isRemoveVisibale(true);
+            }
+        }
+
+        ko.postbox.subscribe("sightingEditedTopic", function (newValue) {
+            self.make("");
+            self.model("");
+            self.registration("");
+            self.location("");
+            self.seenDateTime("");
+            self.photoUrl(null);
+            self.photoContent = "";
+        });
+
+        self.editClicked = function () {
+            validateNewSighting();
+
+            const utcDateStr = getUTCDateString(self.seenDateTime());
+            const picture = self.getPictureObject();
+
+            const updateObj = {
+                id: self.planeSightingOriginal.id,
+                make: self.make(),
+                model: self.model(),
+                registration: self.registration(),
+                location: self.location(),
+                seenDateTime: utcDateStr,
+                picture: picture
+            };
+            sightingEditModel.sendEditSighting(updateObj);
+        }
+
+        self.removePhotoClicked = function () {
+            if (self.photoContent.length > 0) {
+                // remove edited photo
+                self.photoContent = "";
+                self.photoUrl(self.planeSightingOriginal.photoSrc);
+            } else {
+                if (self.planeSightingOriginal.picture != null) {
+                    self.planeSightingOriginal.picture.fileKey = "";
+                }
+                
+                self.photoUrl(null);
+                self.isRemoveVisibale(false);
+            }
+        }
+
+        self.photoUpload = function (data, e) {
+
+            var file = e.target.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function (onloadend_e) {
+                var result = reader.result; // base 64 encoded file
+                //TODO check file type and size validation
+                self.photoUrl(result);
+                self.photoContent = result;
+                self.isRemoveVisibale(true);
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        self.getPictureObject = function () {
+            if (self.photoContent != null && self.photoContent.length > 0) {
+                return picture = {
+                    fileContent: self.photoContent
+                };
+            }
+
+            if (self.planeSightingOriginal.picture != null
+            && self.planeSightingOriginal.picture.fileKey != null
+                && self.planeSightingOriginal.picture.fileKey.length > 0) {
+                return picture = {
+                    fileKey: self.planeSightingOriginal.picture.fileKey
+                };
+            }
+
+            return null;
+        }
+
+        function validateNewSighting() {
+            //TODO validations and errror handling
+        }
+    }
+
+    ko.applyBindings(
+        new SightingEditViewModel(new SightingEditModel()),
+        document.getElementById("edit-plane-sighting"));
+
+    function getUTCDateString(dateStr) {
+        const date = new Date(dateStr);
+        return date.toISOString();
+    }
+
+</script>
