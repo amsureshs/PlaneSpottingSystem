@@ -304,13 +304,19 @@
                 onNewRecordAdded();
             });
             request.fail(function (jqXHR, textStatus) {
-                console.log(textStatus);
-                console.log(jqXHR);
+                const errorObj = {
+                    message: "Something went wrong. Please make sure input values are correct."
+                };
+                errorOnNewRecordAdding(errorObj);
             });
         }
 
         function onNewRecordAdded() {
             ko.postbox.publish("newSightingAddedTopic", true);
+        }
+
+        function errorOnNewRecordAdding(errorObj) {
+            ko.postbox.publish("errorOnNewSightingAddingTopic", errorObj);
         }
     }
 
@@ -329,6 +335,9 @@
 
         self.isRemoveVisibale = ko.observable(false);
 
+        self.isErrorOccurred = ko.observable(false);
+        self.errorMessage = ko.observable("");
+
         ko.postbox.subscribe("newSightingAddedTopic", function (newValue) {
             self.make("");
             self.model("");
@@ -337,10 +346,17 @@
             self.seenDateTime("");
             self.photoUrl(null);
             self.photoContent = "";
+
+            self.isErrorOccurred(false);
+            self.errorMessage("");
+        });
+
+        ko.postbox.subscribe("errorOnNewSightingAddingTopic", function (errorObj) {
+            self.isErrorOccurred(true);
+            self.errorMessage(errorObj.message);
         });
 
         self.addClicked = function () {
-            validateNewSighting();
             const utcDateStr = getUTCDateString(self.seenDateTime());
 
             var picture = null;
@@ -357,7 +373,15 @@
                 seenDateTime: utcDateStr,
                 picture: picture
             };
-            sightingCreateModel.sendCreateSighting(createObj);
+
+            const validationError = validateAddEditModels(createObj);
+            if (validationError == null) {
+                sightingCreateModel.sendCreateSighting(createObj);
+            } else {
+                self.isErrorOccurred(true);
+                self.errorMessage(validationError);
+            }
+            
         }
 
         self.removePhotoClicked = function () {
@@ -382,10 +406,6 @@
             if (file) {
                 reader.readAsDataURL(file);
             }
-        }
-
-        function validateNewSighting() {
-            //TODO validations and handle errors
         }
     }
 
@@ -412,8 +432,10 @@
                 onSightingEdited();
             });
             request.fail(function (jqXHR, textStatus) {
-                console.log(textStatus);
-                console.log(jqXHR);
+                const errorObj = {
+                    message: "Something went wrong. Please make sure input values are correct."
+                };
+                errorOnEditRecord(errorObj);
             });
         }
 
@@ -421,6 +443,10 @@
             // to refresh the list
             ko.postbox.publish("newSightingAddedTopic", true);
             ko.postbox.publish("sightingEditedTopic", true);
+        }
+
+        function errorOnEditRecord(errorObj) {
+            ko.postbox.publish("errorOnEditSightingTopic", errorObj);
         }
     }
 
@@ -440,9 +466,19 @@
 
         self.isRemoveVisibale = ko.observable(true);
 
+        self.isErrorOccurred = ko.observable(false);
+        self.errorMessage = ko.observable("");
+
         ko.postbox.subscribe("sightingToBeUpdatedTopic", function (planeSighting) {
             self.planeSightingOriginal = planeSighting;
+            self.isErrorOccurred(false);
+            self.errorMessage("");
             updateFormValues(planeSighting);
+        });
+
+        ko.postbox.subscribe("errorOnEditSightingTopic", function (errorObj) {
+            self.isErrorOccurred(true);
+            self.errorMessage(errorObj.message);
         });
 
         function updateFormValues(planeSighting) {
@@ -471,8 +507,6 @@
         });
 
         self.editClicked = function () {
-            validateNewSighting();
-
             const utcDateStr = getUTCDateString(self.seenDateTime());
             const picture = self.getPictureObject();
 
@@ -485,7 +519,14 @@
                 seenDateTime: utcDateStr,
                 picture: picture
             };
-            sightingEditModel.sendEditSighting(updateObj);
+
+            const validationError = validateAddEditModels(updateObj);
+            if (validationError == null) {
+                sightingEditModel.sendEditSighting(updateObj);
+            } else {
+                self.isErrorOccurred(true);
+                self.errorMessage(validationError);
+            }
         }
 
         self.removePhotoClicked = function () {
@@ -538,10 +579,6 @@
 
             return null;
         }
-
-        function validateNewSighting() {
-            //TODO validations and errror handling
-        }
     }
 
     ko.applyBindings(
@@ -549,8 +586,51 @@
         document.getElementById("edit-plane-sighting"));
 
     function getUTCDateString(dateStr) {
-        const date = new Date(dateStr);
-        return date.toISOString();
+        try {
+            const date = new Date(dateStr);
+            return date.toISOString();
+        } catch (err) {
+            return "";
+        }
+    }
+
+    function validateAddEditModels(planeSighting) {
+        //make
+        if (!isValidText(planeSighting.make, 1, 128)) {
+            return "Make is required (max 128 characters)";
+        }
+        //model
+        if (!isValidText(planeSighting.model, 1, 128)) {
+            return "Model is required (max 128 characters)";
+        }
+
+        //rgistration
+        const regex = new RegExp('^[A-Za-z]{1,2}-[A-Za-z]{1,5}$');
+        if (!regex.test(planeSighting.registration)) {
+            return "Rgistration is required with correct format";
+        }
+
+        //location
+        if (!isValidText(planeSighting.location, 1, 255)) {
+            return "Location is required (max 255 characters)";
+        }
+
+        //seenDate
+        if (planeSighting.seenDateTime.length === 0) {
+            return "SeenDate is required (a past date time)";
+        }
+
+        return null;
+    }
+
+    function isValidText(str, minChars, maxChars) {
+        if (str) {
+            str = str.trim();
+        }
+        if (str && str.length >= minChars && str.length <= maxChars) {
+            return true;
+        }
+        return false;
     }
 
 </script>

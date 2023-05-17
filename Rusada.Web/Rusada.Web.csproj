@@ -13,7 +13,6 @@
     <None Remove="Models\Validators\" />
     <None Remove="Filters\" />
     <None Remove="ClientApp\src\" />
-    <None Remove="Infrastructure\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\APIViewModels\" />
@@ -21,7 +20,6 @@
     <Folder Include="Filters\" />
     <Folder Include="wwwroot\lib\knockout\" />
     <Folder Include="wwwroot\lib\flatpickr\" />
-    <Folder Include="Infrastructure\" />
     <Folder Include="wwwroot\lib\moment\" />
     <Folder Include="wwwroot\images\plane-pictures\" />
   </ItemGroup>
