@@ -21,6 +21,19 @@ body {
   margin-bottom: 60px;
 }
 
+/*Custom css*/
+.img-thumbnail {
+    height: 50px;
+}
+
+.img-medium {
+    height: 150px;
+}
+
+tbody, td, tfoot, th, thead, tr {
+    vertical-align: baseline;
+}
+
 .click-able {
     cursor: pointer;
 }

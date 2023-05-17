@@ -7,6 +7,9 @@
                     <h5 class="modal-title" id="exampleModalLabel">Add New</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="alert alert-danger" role="alert" data-bind="visible: isErrorOccurred, text: errorMessage">
+
+                </div>
                 <div class="modal-body">
                     <form>
 
@@ -32,7 +35,16 @@
 
                         <div class="mb-3">
                             <label for="time" class="col-form-label">Seen At:</label>
-                            <input type="text" class="form-control" id="address-field" data-bind="value: seenDateTime">
+                            <input type="text" class="form-control" id="date-time-field" data-bind="value: seenDateTime">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formFile" class="form-label">Photo:</label>
+                            <input class="form-control" type="file" id="formFile" data-bind="event: {change: photoUpload}" accept="image/*">
+                            <div data-bind="visible: isRemoveVisibale">
+                                <img class="img-thumbnail" data-bind="attr: {src: photoUrl()}" />
+                                <a href="#" class="link-danger" data-bind="click: removePhotoClicked">remove</a>
+                            </div>
                         </div>
 
                     </form>
@@ -49,13 +61,14 @@
 
 <script>
 
-    //$("#datepicker").flatpickr()
+    $('#createModal').on('show.bs.modal', function (event) {
 
-    //$('#createModal').on('show.bs.modal', function (event) {
+        $("#date-time-field").flatpickr({
+            enableTime: true,
+            dateFormat: "m/d/Y H:i",
+        });
 
-
-
-    //});
+    });
 
 
 </script>

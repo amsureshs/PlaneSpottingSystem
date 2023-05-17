@@ -15,11 +15,11 @@ using Rusada.Web.Models.APIViewModels;
 var builder = WebApplication.CreateBuilder(args);
 
 //Database context
-if (builder.Configuration.GetValue<bool>("UseInSQLiteDatabase"))
+if (builder.Configuration.GetValue<bool>("UseSQLiteDatabase"))
 {
     var folder = Environment.SpecialFolder.LocalApplicationData;
     var path = Environment.GetFolderPath(folder);
-    var dbPath = System.IO.Path.Join(path, "RusadaDb_2.db");
+    var dbPath = System.IO.Path.Join(path, "RusadaDb_5.db");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite($"Data Source={dbPath}"));
@@ -45,13 +45,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IValidator<PlaneSightingCreateVM>, PlaneSightingCreateVMValidator>();
 builder.Services.AddScoped<IValidator<PlaneSightingEditVM>, PlaneSightingEditVMValidator>();
 
-
 //Domain servicses
 builder.Services.AddTransient<IPlaneSightingsRepository, PlaneSightingsRepository>();
 builder.Services.AddTransient<IPlaneSightingsService, PlaneSightingsService>();
 builder.Services.AddTransient<IPlanePicturePersist, PlanePictureDiskPersist>();
-
-//TODO Db initate and ceeding
 
 var app = builder.Build();
 

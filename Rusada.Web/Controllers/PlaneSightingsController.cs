@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rusada.Domain.Interfaces;
 using Rusada.Domain.Models.DTOs;
@@ -11,6 +12,7 @@ using Rusada.Web.Models.APIViewModels;
 
 namespace Rusada.Web.Controllers
 {
+    [Authorize]
     public class PlaneSightingsController : BaseController
     {
         private readonly IPlaneSightingsService planeSightingsService;
@@ -67,7 +69,6 @@ namespace Rusada.Web.Controllers
             return planeSighting.Adapt<PlaneSightingVM>();
         }
 
-        //TODO pagination list
         [HttpGet]
         public async Task<PageListVM<PlaneSightingVM>> GetListAsync(
             [FromQuery] string searchText,

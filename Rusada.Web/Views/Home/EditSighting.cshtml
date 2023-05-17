@@ -1,4 +1,5 @@
-﻿<div>
+﻿<div id="edit-plane-sighting">
+
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -6,34 +7,51 @@
                     <h5 class="modal-title" id="exampleModalLabel">Update</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="alert alert-danger" role="alert" data-bind="visible: isErrorOccurred, text: errorMessage">
+
+                </div>
                 <div class="modal-body">
                     <form>
 
                         <div class="mb-3">
                             <label for="make" class="col-form-label">Make:</label>
-                            <input type="text" class="form-control" id="make-field">
+                            <input type="text" class="form-control" id="make-field" data-bind="value: make">
                         </div>
 
                         <div class="mb-3">
                             <label for="model" class="col-form-label">Model:</label>
-                            <input type="text" class="form-control" id="model-field">
+                            <input type="text" class="form-control" id="model-field" data-bind="value: model">
                         </div>
 
                         <div class="mb-3">
-                            <label for="address" class="col-form-label">Address:</label>
-                            <input type="text" class="form-control" id="address-field">
+                            <label for="address" class="col-form-label">Registration:</label>
+                            <input type="text" class="form-control" id="address-field" data-bind="value: registration">
                         </div>
 
                         <div class="mb-3">
-                            <label for="time" class="col-form-label">Time:</label>
-                            <input type="text" class="form-control" id="time-field">
+                            <label for="address" class="col-form-label">Location:</label>
+                            <input type="text" class="form-control" id="address-field" data-bind="value: location">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="time" class="col-form-label">Seen At:</label>
+                            <input type="text" class="form-control" id="date-time-field-edit" data-bind="value: seenDateTime">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formFile" class="form-label">Photo:</label>
+                            <input class="form-control" type="file" id="formFile" data-bind="event: {change: photoUpload}" accept="image/*">
+                            <div data-bind="visible: isRemoveVisibale">
+                                <img class="img-thumbnail" data-bind="attr: {src: photoUrl()}" />
+                                <a href="#" class="link-danger" data-bind="click: removePhotoClicked">remove</a>
+                            </div>
                         </div>
 
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: editClicked">Update</button>
                 </div>
             </div>
         </div>
@@ -43,13 +61,9 @@
 
 <script>$('#editModal').on('show.bs.modal', function (event) {
 
-        var button = $(event.relatedTarget)
-
-        var data = button.data('content')
-
-        $('#make-field').val(data.make);
-        $('#model-field').val(data.model);
-        $('#address-field').val(data.address);
-        $('#time-field').val(data.time);
+        $("#date-time-field-edit").flatpickr({
+            enableTime: true,
+            dateFormat: "m/d/Y H:i",
+        });
 
     });</script>

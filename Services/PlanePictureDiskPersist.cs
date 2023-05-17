@@ -32,8 +32,10 @@ namespace Rusada.Services
 
                 var imagePath = Path.Combine(folderPath, name);
 
+                //remove data:image/png;base64, from string content
+                var imgContent = pictureContent.Substring(pictureContent.LastIndexOf(',') + 1);
                 //base64 image to bytes
-                var imageDataBytes = Convert.FromBase64String(pictureContent);
+                var imageDataBytes = Convert.FromBase64String(imgContent);
 
                 //write to the file
                 await File.WriteAllBytesAsync(imagePath, imageDataBytes);
