@@ -95,7 +95,7 @@ namespace Rusada.Services
                     };
                 }
                 else if (planeSightingEditDomainDTO.Picture != null
-                    && string.IsNullOrWhiteSpace(planeSightingEditDomainDTO.Picture.FileKey))
+                    && !string.IsNullOrWhiteSpace(planeSightingEditDomainDTO.Picture.FileKey))
                 {
                     //if there is a fileKey, then it is considered as an exist file
                     planeSighting.PlanePicture = new PlanePictureCreateDataDTO

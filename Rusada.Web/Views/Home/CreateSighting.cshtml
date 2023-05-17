@@ -38,7 +38,10 @@
                         <div class="mb-3">
                             <label for="formFile" class="form-label">Photo:</label>
                             <input class="form-control" type="file" id="formFile" data-bind="event: {change: photoUpload}" accept="image/*">
-                            <img class="img-thumbnail" data-bind="attr: {src: photoUrl()}" />
+                            <div data-bind="visible: isRemoveVisibale">
+                                <img class="img-thumbnail" data-bind="attr: {src: photoUrl()}" />
+                                <a href="#" class="link-danger" data-bind="click: removePhotoClicked">remove</a>
+                            </div>
                         </div>
 
                     </form>
