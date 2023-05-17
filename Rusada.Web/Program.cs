@@ -15,11 +15,11 @@ using Rusada.Web.Models.APIViewModels;
 var builder = WebApplication.CreateBuilder(args);
 
 //Database context
-if (builder.Configuration.GetValue<bool>("UseInSQLiteDatabase"))
+if (builder.Configuration.GetValue<bool>("UseSQLiteDatabase"))
 {
     var folder = Environment.SpecialFolder.LocalApplicationData;
     var path = Environment.GetFolderPath(folder);
-    var dbPath = System.IO.Path.Join(path, "RusadaDb_4.db");
+    var dbPath = System.IO.Path.Join(path, "RusadaDb_5.db");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite($"Data Source={dbPath}"));
