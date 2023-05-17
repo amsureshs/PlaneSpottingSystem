@@ -11,7 +11,6 @@ using Rusada.Domain.Interfaces;
 using Rusada.Services;
 using Rusada.Web.Models.Validators;
 using Rusada.Web.Models.APIViewModels;
-using Rusada.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +19,7 @@ if (builder.Configuration.GetValue<bool>("UseInSQLiteDatabase"))
 {
     var folder = Environment.SpecialFolder.LocalApplicationData;
     var path = Environment.GetFolderPath(folder);
-    var dbPath = System.IO.Path.Join(path, "RusadaDb_2.db");
+    var dbPath = System.IO.Path.Join(path, "RusadaDb_4.db");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlite($"Data Source={dbPath}"));
@@ -41,22 +40,15 @@ builder.Services
 
 //Add services to the container.
 builder.Services.AddControllersWithViews();
-    //.AddJsonOptions(options =>
-    //{
-    //    options.JsonSerializerOptions.Converters.Add(new DateTimeUTCJsonConverter());
-    //});
 
 //model validations with FluentValidation
 builder.Services.AddScoped<IValidator<PlaneSightingCreateVM>, PlaneSightingCreateVMValidator>();
 builder.Services.AddScoped<IValidator<PlaneSightingEditVM>, PlaneSightingEditVMValidator>();
 
-
 //Domain servicses
 builder.Services.AddTransient<IPlaneSightingsRepository, PlaneSightingsRepository>();
 builder.Services.AddTransient<IPlaneSightingsService, PlaneSightingsService>();
 builder.Services.AddTransient<IPlanePicturePersist, PlanePictureDiskPersist>();
-
-//TODO Db initate and ceeding
 
 var app = builder.Build();
 

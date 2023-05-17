@@ -23,10 +23,7 @@ namespace Rusada.Data.Repositories
         {
             try
             {
-                if (dbContext.Database.IsSqlServer())
-                {
-                    await dbContext.Database.MigrateAsync();
-                }
+                await dbContext.Database.MigrateAsync();
             }
             catch (Exception ex)
             {

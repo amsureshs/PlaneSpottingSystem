@@ -69,7 +69,6 @@ namespace Rusada.Web.Controllers
             return planeSighting.Adapt<PlaneSightingVM>();
         }
 
-        //TODO pagination list
         [HttpGet]
         public async Task<PageListVM<PlaneSightingVM>> GetListAsync(
             [FromQuery] string searchText,

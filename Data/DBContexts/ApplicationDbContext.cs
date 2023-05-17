@@ -2,6 +2,7 @@
 using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Rusada.Data.Models.Entities;
 
@@ -12,20 +13,32 @@ namespace Rusada.Data.DBContexts
         public DbSet<PlaneSighting> PlaneSightings { get; set; }
         public DbSet<PlanePicture> PlanePictures { get; set; }
 
-        public string DbPath { get; }
+        private readonly string dbPath;
+        private readonly bool isSQLIteDbInUse;
 
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            IOptions<OperationalStoreOptions> operationalStoreOptions,
+            IConfiguration configuration)
             : base(options, operationalStoreOptions)
         {
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
-            DbPath = System.IO.Path.Join(path, "RusadaDb_2.db");
+            this.isSQLIteDbInUse = configuration.GetValue<bool>("UseInSQLiteDatabase");
+
+            if (isSQLIteDbInUse)
+            {
+                var folder = Environment.SpecialFolder.LocalApplicationData;
+                var path = Environment.GetFolderPath(folder);
+                dbPath = System.IO.Path.Join(path, "RusadaDb_4.db");
+            }
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+        {
+            if (isSQLIteDbInUse)
+            {
+                options.UseSqlite($"Data Source={dbPath}");
+            }
+        }
 
         public async Task<int> SaveChangesAsync()
         {
