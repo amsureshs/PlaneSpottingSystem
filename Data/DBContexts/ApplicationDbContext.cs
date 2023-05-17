@@ -22,13 +22,13 @@ namespace Rusada.Data.DBContexts
             IConfiguration configuration)
             : base(options, operationalStoreOptions)
         {
-            this.isSQLIteDbInUse = configuration.GetValue<bool>("UseInSQLiteDatabase");
+            this.isSQLIteDbInUse = configuration.GetValue<bool>("UseSQLiteDatabase");
 
             if (isSQLIteDbInUse)
             {
                 var folder = Environment.SpecialFolder.LocalApplicationData;
                 var path = Environment.GetFolderPath(folder);
-                dbPath = System.IO.Path.Join(path, "RusadaDb_4.db");
+                dbPath = System.IO.Path.Join(path, "RusadaDb_5.db");
             }
         }
 
