@@ -510,7 +510,7 @@
 
             reader.onloadend = function (onloadend_e) {
                 var result = reader.result; // base 64 encoded file
-                //TODO check file size validation
+                //TODO check file type and size validation
                 self.photoUrl(result);
                 self.photoContent = result;
                 self.isRemoveVisibale(true);
